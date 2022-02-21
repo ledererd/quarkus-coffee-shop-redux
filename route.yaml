@@ -1,0 +1,53 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    openshift.io/host.generated: "true"
+  labels:
+    app: quarkuscoffeeshop-web
+    app.kubernetes.io/component: quarkuscoffeeshop-web
+    app.kubernetes.io/instance: quarkuscoffeeshop-web
+    app.kubernetes.io/name: ""
+    app.kubernetes.io/part-of: quarkus-cafe
+    app.openshift.io/runtime: ""
+    app.openshift.io/runtime-version: latest
+    jeremydavis/quarkuscoffeeshop-web: ""
+  name: quarkuscoffeeshop-web
+  namespace: NAMESPACE
+spec:
+  host: quarkuscoffeeshop-web-NAMESPACE.apps.DOMAIN
+  port:
+    targetPort: 8080-tcp
+  to:
+    kind: Service
+    name: quarkuscoffeeshop-web
+    weight: 100
+  wildcardPolicy: None
+
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    openshift.io/host.generated: "true"
+  labels:
+    app: quarkuscoffeeshop-customermocker
+    app.kubernetes.io/component: quarkuscoffeeshop-customermocker
+    app.kubernetes.io/instance: quarkuscoffeeshop-customermocker
+    app.kubernetes.io/name: ""
+    app.kubernetes.io/part-of: quarkus-cafe
+    app.openshift.io/runtime: ""
+    app.openshift.io/runtime-version: latest
+  name: quarkuscoffeeshop-customermocker
+  namespace: NAMESPACE
+spec:
+  host: quarkuscoffeeshop-mocker-NAMESPACE.apps.DOMAIN
+  port:
+    targetPort: 8080-tcp
+  to:
+    kind: Service
+    name: quarkuscoffeeshop-customermocker
+    weight: 100
+  wildcardPolicy: None
+

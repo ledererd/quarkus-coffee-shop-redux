@@ -1,0 +1,273 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"quarkuscoffeeshop-inventory"}]'
+  name: quarkuscoffeeshop-barista
+  labels:
+    app: quarkuscoffeeshop-barista
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-barista
+  template:
+    metadata:
+      name: quarkuscoffeeshop-barista-deployment
+      labels:
+        app:  quarkuscoffeeshop-barista
+        app.kubernetes.io/component: quarkuscoffeeshop-barista
+        app.kubernetes.io/instance: quarkuscoffeeshop-barista
+        app.kubernetes.io/part-of: quarkus-cafe
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-barista
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-barista:VERSION-BARISTA
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8778
+              protocol: TCP
+            - containerPort: 9779
+              protocol: TCP
+          env:
+            - name: KAFKA_BOOTSTRAP_URLS
+              value: KAFKA-CLUSTER-kafka-bootstrap:9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkuscoffeeshop-inventory
+  labels:
+    app: quarkuscoffeeshop-inventory
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-inventory
+  template:
+    metadata:
+      name: quarkuscoffeeshop-inventory-deployment
+      labels:
+        app:  quarkuscoffeeshop-inventory
+        app.kubernetes.io/component: quarkuscoffeeshop-inventory
+        app.kubernetes.io/instance: quarkuscoffeeshop-inventory
+        app.kubernetes.io/part-of: quarkus-cafe
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-inventory
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-inventory:VERSION-INVENTORY
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8778
+              protocol: TCP
+            - containerPort: 9779
+              protocol: TCP
+          env:
+            - name: KAFKA_BOOTSTRAP_URLS
+              value: KAFKA-CLUSTER-kafka-bootstrap:9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"quarkuscoffeeshop-barista"},{"apiVersion":"apps/v1","kind":"Deployment","name":"quarkuscoffeeshop-kitchen"},{"apiVersion":"apps.openshift.io/v1","kind":"DeploymentConfig","name":"coffeeshopdb"}]'
+  name: quarkuscoffeeshop-counter
+  labels:
+    app: quarkuscoffeeshop-counter
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-counter
+  template:
+    metadata:
+      name: quarkuscoffeeshop-counter-deployment
+      labels:
+        app:  quarkuscoffeeshop-counter
+        app.kubernetes.io/component: quarkuscoffeeshop-counter
+        app.kubernetes.io/instance: quarkuscoffeeshop-counter
+        app.kubernetes.io/part-of: quarkus-cafe
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-counter
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-counter:VERSION-COUNTER
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KAFKA_BOOTSTRAP_URLS
+              value: KAFKA-CLUSTER-kafka-bootstrap:9092
+            - name: PGSQL_URL
+              value: jdbc:postgresql://coffeeshopdb:5432/coffeeshopdb?currentSchema=coffeeshop
+            - name: PGSQL_USER
+              value: coffeeshopadmin
+            - name: PGSQL_PASS
+              value: coffeeshopadmin
+            - name: LOG_SQL
+              value: 'true'
+            - name: QUARKUS_LOG_LEVEL
+              value: INFO
+            - name: QUARKUSCOFFEESHOP_LOG_LEVEL
+              value: DEBUG
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkuscoffeeshop-customermocker
+  labels:
+    app: quarkuscoffeeshop-customermocker
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-customermocker
+  template:
+    metadata:
+      name: quarkuscoffeeshop-customermocker-deployment
+      labels:
+        app:  quarkuscoffeeshop-customermocker
+        app.kubernetes.io/component: quarkuscoffeeshop-customermocker
+        app.kubernetes.io/instance: quarkuscoffeeshop-customermocker
+        app.kubernetes.io/part-of: quarkus-cafe
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-customermocker
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-customermocker:VERSION-MOCKER
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: REST_URL
+              value: http://quarkuscoffeeshop-web-NAMESPACE.apps.DOMAIN
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"quarkuscoffeeshop-inventory"}]'
+  name: quarkuscoffeeshop-kitchen
+  labels:
+    app: quarkuscoffeeshop-kitchen
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-kitchen
+  template:
+    metadata:
+      name: quarkuscoffeeshop-kitchen-deployment
+      labels:
+        app:  quarkuscoffeeshop-kitchen
+        app.kubernetes.io/component: quarkuscoffeeshop-kitchen
+        app.kubernetes.io/instance: quarkuscoffeeshop-kitchen
+        app.kubernetes.io/part-of: quarkus-cafe
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-kitchen
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-kitchen:VERSION-KITCHEN
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KAFKA_BOOTSTRAP_URLS
+              value: KAFKA-CLUSTER-kafka-bootstrap:9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkuscoffeeshop-customerloyalty
+  labels:
+    app: quarkuscoffeeshop-customerloyalty
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-customerloyalty
+  template:
+    metadata:
+      name: quarkuscoffeeshop-customerloyalty-deployment
+      labels:
+        app:  quarkuscoffeeshop-customerloyalty
+        app.kubernetes.io/component: quarkuscoffeeshop-customerloyalty
+        app.kubernetes.io/instance: quarkuscoffeeshop-customerloyalty
+        app.kubernetes.io/part-of: quarkus-cafe
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-customerloyalty
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-customerloyalty:VERSION-LOYALTY
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KAFKA_BOOTSTRAP_URLS
+              value: KAFKA-CLUSTER-kafka-bootstrap:9092
+            - name: QUARKUS_LOG_LEVEL
+              value: INFO
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"quarkuscoffeeshop-counter"}]'
+  name: quarkuscoffeeshop-web
+  labels:
+    app: quarkuscoffeeshop-web
+    app.kubernetes.io/part-of: quarkus-cafe
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: quarkuscoffeeshop-web
+  template:
+    metadata:
+      name: quarkuscoffeeshop-web
+      labels:
+        app: quarkuscoffeeshop-web
+        app.kubernetes.io/component: quarkuscoffeeshop-web
+        app.kubernetes.io/instance: quarkuscoffeeshop-web
+        app.kubernetes.io/part-of: quarkuscoffeeshop
+        quarkus-cafe: ""
+        app.openshift.io/runtime-namespace: NAMESPACE
+    spec:
+      containers:
+        - name: quarkuscoffeeshop-web
+          image: quay.io/quarkuscoffeeshop/quarkuscoffeeshop-web:VERSION-WEB
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: KAFKA-CLUSTER-kafka-bootstrap:9092
+            - name: REST_URL
+              value: http://quarkuscoffeeshop-web-NAMESPACE.apps.DOMAIN
+            - name: STREAM_URL
+              value:  http://quarkuscoffeeshop-web-NAMESPACE.apps.DOMAIN/dashboard/stream
+            - name: LOYALTY_STREAM_URL
+              value: http://quarkuscoffeeshop-web-NAMESPACE.apps.DOMAIN/dashboard/loyaltystream
+            - name: CORS_ORIGINS
+              value: http://quarkuscoffeeshop-web-NAMESPACE.apps.DOMAIN
+            - name: STORE_ID
+              value: ATLANTA
